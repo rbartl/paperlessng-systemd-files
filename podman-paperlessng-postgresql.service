@@ -1,0 +1,23 @@
+# paperlessng-postgresql.service #######################################################################
+[Unit]
+Description=paperlessng-postgresql
+After=network-online.target
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+ExecStartPre=-/usr/bin/podman kill paperlessng-postgresql
+ExecStartPre=-/usr/bin/podman rm paperlessng-postgresql
+ExecStartPre=/usr/bin/podman pull docker.io/postgres:13.1
+ExecStart=/usr/bin/podman run \
+    --name=paperlessng-postgresql \
+    --pod paperlessngpod \
+    -v /srv/paperlessng_postgresql:/var/lib/postgresql/data \
+    -e POSTGRES_USER=paperless \
+    -e POSTGRES_PASSWORD=paperless \
+    -e POSTGRES_DB=paperless \
+    docker.io/postgres:13.1
+
+ExecStop=/usr/bin/podman stop paperlessng-postgresql
+
+TimeoutSec=900

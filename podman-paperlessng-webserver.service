@@ -1,0 +1,34 @@
+# paperlessng-webserver.service #######################################################################
+[Unit]
+Description=paperlessng-webserver
+After=network-online.target
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+ExecStartPre=-/usr/bin/podman kill paperlessng-webserver
+ExecStartPre=-/usr/bin/podman rm paperlessng-webserver
+ExecStartPre=/usr/bin/podman pull docker.io/jonaswinkler/paperless-ng
+ExecStart=/usr/bin/podman run \
+    --name=paperlessng-webserver \
+    --pod paperlessngpod \
+    -v /srv/paperlessng_data:/usr/src/paperless/data \
+    -v /srv/paperlessng_media:/usr/src/paperless/media \
+    -v /srv/paperlessng_export:/usr/src/paperless/export \
+    -v /srv/paperlessng_consume:/usr/src/paperless/consume \
+    -e PAPERLESS_REDIS=redis://localhost:6379 \
+    -e PAPERLESS_CONSUMER_POLLING=60 \
+    -e PAPERLESS_DBHOST=localhost \
+    -e PAPERLESS_SECRET_KEY=paperlessng \
+    -e PAPERLESS_TIME_ZONE=Europe/Vienna \
+    -e PAPERLESS_OCR_LANGUAGES=deu \
+    -e PAPERLESS_OCR_LANGUAGE=deu \
+    -e PAPERLESS_ADMIN_USER=admin \
+    -e PAPERLESS_ADMIN_PASSWORD=password \
+    docker.io/jonaswinkler/paperless-ng
+
+
+ExecStop=/usr/bin/podman stop paperlessng-webserver
+
+TimeoutSec=900
+

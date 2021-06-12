@@ -1,0 +1,19 @@
+# paperlessng-redis.service #######################################################################
+[Unit]
+Description=paperlessng-redis
+After=network-online.target
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+ExecStartPre=-/usr/bin/podman kill paperlessng-redis
+ExecStartPre=-/usr/bin/podman rm paperlessng-redis
+ExecStartPre=/usr/bin/podman pull docker.io/redis:6.0
+ExecStart=/usr/bin/podman run \
+    --name=paperlessng-redis \
+    --pod paperlessngpod \
+    docker.io/redis:6.0
+
+ExecStop=/usr/bin/podman stop paperlessng-redis
+
+TimeoutSec=900
